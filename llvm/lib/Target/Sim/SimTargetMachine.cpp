@@ -22,4 +22,5 @@ SimTargetMachine::SimTargetMachine(const Target &T, const Triple &TT,
                         CPU, FS, Options, Reloc::Static,
                         getEffectiveCodeModel(CM, CodeModel::Small), OL) {
   SIM_DUMP_CYAN
+  initAsmInfo();
 }

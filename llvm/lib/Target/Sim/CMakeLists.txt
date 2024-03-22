@@ -1,7 +1,14 @@
 add_llvm_component_group(Sim)
 
+set(LLVM_TARGET_DEFINITIONS Sim.td)
+
+tablegen(LLVM SimGenRegisterInfo.inc -gen-register-info)
+
+add_public_tablegen_target(SimCommonTableGen)
+
 add_llvm_target(SimCodeGen
   SimTargetMachine.cpp
+  SimRegisterInfo.cpp
 
   LINK_COMPONENTS
   CodeGen
