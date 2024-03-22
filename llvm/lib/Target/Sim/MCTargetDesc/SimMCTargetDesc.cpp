@@ -1,10 +1,13 @@
 #include "MCTargetDesc/SimInfo.h"
 #include "Sim.h"
+#include "SimMCAsmInfo.h"
 #include "TargetInfo/SimTargetInfo.h"
+#include "llvm/MC/MCDwarf.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
+#include "llvm/Support/ErrorHandling.h"
 
 using namespace llvm;
 
@@ -37,10 +40,22 @@ static MCSubtargetInfo *createSimMCSubtargetInfo(const Triple &TT,
   return createSimMCSubtargetInfoImpl(TT, CPU, /*TuneCPU*/ CPU, FS);
 }
 
+static MCAsmInfo *createSimMCAsmInfo(const MCRegisterInfo &MRI,
+                                     const Triple &TT,
+                                     const MCTargetOptions &Options) {
+  SIM_DUMP_MAGENTA
+  MCAsmInfo *MAI = new SimELFMCAsmInfo(TT);
+  unsigned SP = MRI.getDwarfRegNum(Sim::R1, true);
+  MCCFIInstruction Inst = MCCFIInstruction::cfiDefCfa(nullptr, SP, 0);
+  MAI->addInitialFrameState(Inst);
+  return MAI;
+}
+
 // We need to define this function for linking succeed
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeSimTargetMC() {
   SIM_DUMP_MAGENTA
   Target &TheSimTarget = getTheSimTarget();
+  RegisterMCAsmInfoFn X(TheSimTarget, createSimMCAsmInfo);
   // Register the MC register info.
   TargetRegistry::RegisterMCRegInfo(TheSimTarget, createSimMCRegisterInfo);
   // Register the MC instruction info.
