@@ -3,6 +3,7 @@
 #include "TargetInfo/SimTargetInfo.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCRegisterInfo.h"
+#include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
 
 using namespace llvm;
@@ -12,6 +13,9 @@ using namespace llvm;
 
 #define GET_INSTRINFO_MC_DESC
 #include "SimGenInstrInfo.inc"
+
+#define GET_SUBTARGETINFO_MC_DESC
+#include "SimGenSubtargetInfo.inc"
 
 static MCRegisterInfo *createSimMCRegisterInfo(const Triple &TT) {
   SIM_DUMP_MAGENTA
@@ -27,6 +31,12 @@ static MCInstrInfo *createSimMCInstrInfo() {
   return X;
 }
 
+static MCSubtargetInfo *createSimMCSubtargetInfo(const Triple &TT,
+                                                 StringRef CPU, StringRef FS) {
+  SIM_DUMP_MAGENTA
+  return createSimMCSubtargetInfoImpl(TT, CPU, /*TuneCPU*/ CPU, FS);
+}
+
 // We need to define this function for linking succeed
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeSimTargetMC() {
   SIM_DUMP_MAGENTA
@@ -35,4 +45,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeSimTargetMC() {
   TargetRegistry::RegisterMCRegInfo(TheSimTarget, createSimMCRegisterInfo);
   // Register the MC instruction info.
   TargetRegistry::RegisterMCInstrInfo(TheSimTarget, createSimMCInstrInfo);
+  // Register the MC subtarget info.
+  TargetRegistry::RegisterMCSubtargetInfo(TheSimTarget,
+                                          createSimMCSubtargetInfo);
 }
