@@ -1,10 +1,10 @@
 #include "SimMCTargetDesc.h"
-#include "TargetInfo/SimTargetInfo.h"
 #include "Sim.h"
 #include "SimInfo.h"
 #include "SimInstPrinter.h"
 #include "SimMCAsmInfo.h"
 #include "SimTargetStreamer.h"
+#include "TargetInfo/SimTargetInfo.h"
 #include "llvm/MC/MCDwarf.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCRegisterInfo.h"
@@ -56,10 +56,10 @@ static MCAsmInfo *createSimMCAsmInfo(const MCRegisterInfo &MRI,
 }
 
 static MCInstPrinter *createSimMCInstPrinter(const Triple &T,
-                                              unsigned SyntaxVariant,
-                                              const MCAsmInfo &MAI,
-                                              const MCInstrInfo &MII,
-                                              const MCRegisterInfo &MRI) {
+                                             unsigned SyntaxVariant,
+                                             const MCAsmInfo &MAI,
+                                             const MCInstrInfo &MII,
+                                             const MCRegisterInfo &MRI) {
   return new SimInstPrinter(MAI, MII, MRI);
 }
 
@@ -89,4 +89,8 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeSimTargetMC() {
   TargetRegistry::RegisterMCInstPrinter(TheSimTarget, createSimMCInstPrinter);
   TargetRegistry::RegisterAsmTargetStreamer(TheSimTarget,
                                             createTargetAsmStreamer);
+  // Register the MC Code Emitter.
+  TargetRegistry::RegisterMCCodeEmitter(TheSimTarget, createSimMCCodeEmitter);
+  // Register the asm backend.
+  TargetRegistry::RegisterMCAsmBackend(TheSimTarget, createSimAsmBackend);
 }
