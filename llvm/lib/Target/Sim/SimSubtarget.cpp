@@ -1,17 +1,19 @@
 #include "SimSubtarget.h"
 #include "Sim.h"
-#include "llvm/Target/TargetMachine.h"
+#include "llvm/MC/TargetRegistry.h"
+#include "llvm/Support/ErrorHandling.h"
 
 using namespace llvm;
 
-#define DEBUG_TYPE "sim-subtarget"
+#define DEBUG_TYPE "Sim-subtarget"
 
 #define GET_SUBTARGETINFO_TARGET_DESC
 #define GET_SUBTARGETINFO_CTOR
 #include "SimGenSubtargetInfo.inc"
 
-SimSubtarget::SimSubtarget(const StringRef &CPU, const StringRef &TuneCPU,
-                           const StringRef &FS, const TargetMachine &TM)
-    : SimGenSubtargetInfo(TM.getTargetTriple(), CPU, TuneCPU, FS) {
-  SIM_DUMP_CYAN
-}
+void SimSubtarget::anchor() {}
+
+SimSubtarget::SimSubtarget(const Triple &TT, const std::string &CPU,
+                             const std::string &FS, const TargetMachine &TM)
+    : SimGenSubtargetInfo(TT, CPU, /*TuneCPU=*/CPU, FS), InstrInfo(),
+      FrameLowering(*this), TLInfo(TM, *this) {}

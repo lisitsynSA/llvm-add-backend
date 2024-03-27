@@ -5,6 +5,10 @@ set(LLVM_TARGET_DEFINITIONS Sim.td)
 tablegen(LLVM SimGenRegisterInfo.inc -gen-register-info)
 tablegen(LLVM SimGenInstrInfo.inc -gen-instr-info)
 tablegen(LLVM SimGenSubtargetInfo.inc -gen-subtarget)
+tablegen(LLVM SimGenCallingConv.inc -gen-callingconv)
+tablegen(LLVM SimGenMCPseudoLowering.inc -gen-pseudo-lowering)
+tablegen(LLVM SimGenAsmWriter.inc -gen-asm-writer)
+tablegen(LLVM SimGenDAGISel.inc -gen-dag-isel)
 
 add_public_tablegen_target(SimCommonTableGen)
 
@@ -13,10 +17,19 @@ add_llvm_target(SimCodeGen
   SimRegisterInfo.cpp
   SimInstrInfo.cpp
   SimSubtarget.cpp
+  SimAsmPrinter.cpp
+  SimFrameLowering.cpp
+  SimISelDagToDag.cpp
+  SimISelLowering.cpp
+  SimMCInstLower.cpp
 
   LINK_COMPONENTS
+  AsmPrinter
   CodeGen
   Core
+  MC
+  SimDesc
+  SelectionDAG
   Support
   Target
   SimInfo
