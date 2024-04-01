@@ -18,6 +18,7 @@
 #include "llvm/CodeGen/ValueTypes.h"
 #include "llvm/IR/CallingConv.h"
 #include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/IntrinsicsSim.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <algorithm>
@@ -29,13 +30,13 @@ using namespace llvm;
 static const MCPhysReg ArgGPRs[] = {Sim::R9, Sim::R10, Sim::R11, Sim::R12};
 
 void SimTargetLowering::ReplaceNodeResults(SDNode *N,
-                                            SmallVectorImpl<SDValue> &Results,
-                                            SelectionDAG &DAG) const {
+                                           SmallVectorImpl<SDValue> &Results,
+                                           SelectionDAG &DAG) const {
   llvm_unreachable("");
 }
 
 SimTargetLowering::SimTargetLowering(const TargetMachine &TM,
-                                       const SimSubtarget &STI)
+                                     const SimSubtarget &STI)
     : TargetLowering(TM), STI(STI) {
   addRegisterClass(MVT::i32, &Sim::GPRRegClass);
 
@@ -60,6 +61,7 @@ SimTargetLowering::SimTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::BR_CC, MVT::i32, Custom);
 
   setOperationAction(ISD::FRAMEADDR, MVT::i32, Legal);
+  setOperationAction(ISD::INTRINSIC_VOID, MVT::i32, Custom);
   // setOperationAction(ISD::FrameIndex, MVT::i32, Custom);
   // setOperationAction(ISD::GlobalAddress, MVT::i32, Custom);
 }
@@ -91,7 +93,7 @@ static Align getPrefTypeAlign(EVT VT, SelectionDAG &DAG) {
 
 // TODO: rewrite
 SDValue SimTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
-                                      SmallVectorImpl<SDValue> &InVals) const {
+                                     SmallVectorImpl<SDValue> &InVals) const {
   SelectionDAG &DAG = CLI.DAG;
   SDLoc &DL = CLI.DL;
   SmallVectorImpl<ISD::OutputArg> &Outs = CLI.Outs;
@@ -527,10 +529,10 @@ bool SimTargetLowering::CanLowerReturn(
 // TODO: rewrite
 SDValue
 SimTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
-                                bool IsVarArg,
-                                const SmallVectorImpl<ISD::OutputArg> &Outs,
-                                const SmallVectorImpl<SDValue> &OutVals,
-                                const SDLoc &DL, SelectionDAG &DAG) const {
+                               bool IsVarArg,
+                               const SmallVectorImpl<ISD::OutputArg> &Outs,
+                               const SmallVectorImpl<SDValue> &OutVals,
+                               const SDLoc &DL, SelectionDAG &DAG) const {
   const MachineFunction &MF = DAG.getMachineFunction();
   const SimSubtarget &STI = MF.getSubtarget<SimSubtarget>();
 
@@ -573,7 +575,7 @@ SimTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
 //===----------------------------------------------------------------------===//
 
 SDValue SimTargetLowering::PerformDAGCombine(SDNode *N,
-                                              DAGCombinerInfo &DCI) const {
+                                             DAGCombinerInfo &DCI) const {
   // TODO: advanced opts
   return {};
 }
@@ -586,9 +588,9 @@ SDValue SimTargetLowering::PerformDAGCombine(SDNode *N,
 /// target, for a load/store of the specified type.
 // TODO: verify
 bool SimTargetLowering::isLegalAddressingMode(const DataLayout &DL,
-                                               const AddrMode &AM, Type *Ty,
-                                               unsigned AS,
-                                               Instruction *I) const {
+                                              const AddrMode &AM, Type *Ty,
+                                              unsigned AS,
+                                              Instruction *I) const {
   // No global is ever allowed as a base.
   if (AM.BaseGV)
     return false;
