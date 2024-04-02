@@ -37,6 +37,7 @@ public:
                                    const MachineInstr *MI);
 
   void emitInstruction(const MachineInstr *MI) override;
+  bool runOnMachineFunction(MachineFunction &MF) override;
 
   // Used in pseudo lowerings
   bool lowerOperand(const MachineOperand &MO, MCOperand &MCOp) const {
@@ -58,6 +59,19 @@ void SimAsmPrinter::emitInstruction(const MachineInstr *MI) {
   MCInst TmpInst;
   if (!lowerSimMachineInstrToMCInst(MI, TmpInst, *this))
     EmitToStreamer(*OutStreamer, TmpInst);
+}
+
+bool SimAsmPrinter::runOnMachineFunction(MachineFunction &MF) {
+  // Set the current MCSubtargetInfo to a copy which has the correct
+  // feature bits for the current MachineFunction
+  MCSubtargetInfo &NewSTI =
+      OutStreamer->getContext().getSubtargetCopy(*TM.getMCSubtargetInfo());
+  NewSTI.setFeatureBits(MF.getSubtarget().getFeatureBits());
+  STI = &NewSTI;
+
+  SetupMachineFunction(MF);
+  emitFunctionBody();
+  return false;
 }
 
 // Force static initialization.

@@ -12,6 +12,7 @@
 
 #include "Sim.h"
 #include "MCTargetDesc/SimMCTargetDesc.h"
+#include "MCTargetDesc/SimFixupKinds.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/MC/MCAsmInfo.h"
@@ -67,7 +68,10 @@ public:
   unsigned getMachineOpValue(const MCInst &MI, const MCOperand &MO,
                              SmallVectorImpl<MCFixup> &Fixups,
                              const MCSubtargetInfo &STI) const;
-  unsigned getSImm16OpValue(const MCInst &MI, unsigned OpNo,
+  unsigned getImm16OpValue(const MCInst &MI, unsigned OpNo,
+                            SmallVectorImpl<MCFixup> &Fixups,
+                            const MCSubtargetInfo &STI) const;
+  unsigned getBranchTarget16OpValue(const MCInst &MI, unsigned OpNo,
                             SmallVectorImpl<MCFixup> &Fixups,
                             const MCSubtargetInfo &STI) const;
 };
@@ -106,7 +110,7 @@ getMachineOpValue(const MCInst &MI, const MCOperand &MO,
 }
 
 unsigned
-SimMCCodeEmitter::getSImm16OpValue(const MCInst &MI, unsigned OpNo,
+SimMCCodeEmitter::getImm16OpValue(const MCInst &MI, unsigned OpNo,
                                      SmallVectorImpl<MCFixup> &Fixups,
                                      const MCSubtargetInfo &STI) const {
   const MCOperand &MO = MI.getOperand(OpNo);
@@ -114,7 +118,7 @@ SimMCCodeEmitter::getSImm16OpValue(const MCInst &MI, unsigned OpNo,
     return MO.getImm();
 
   assert(MO.isExpr() &&
-         "getSImm16OpValue expects only expressions or an immediate");
+         "getImm16OpValue expects only expressions or an immediate");
 
   const MCExpr *Expr = MO.getExpr();
 
@@ -122,6 +126,26 @@ SimMCCodeEmitter::getSImm16OpValue(const MCInst &MI, unsigned OpNo,
   if (const MCConstantExpr *CE = dyn_cast<MCConstantExpr>(Expr))
     return CE->getValue();
 
+  return 0;
+}
+
+/// getBranchTarget21OpValue - Return binary encoding of the branch
+/// target operand. If the machine operand requires relocation,
+/// record the relocation and return zero.
+unsigned SimMCCodeEmitter::
+getBranchTarget16OpValue(const MCInst &MI, unsigned OpNo,
+                         SmallVectorImpl<MCFixup> &Fixups,
+                         const MCSubtargetInfo &STI) const {
+  const MCOperand &MO = MI.getOperand(OpNo);
+
+  // If the destination is an immediate, divide by 4.
+  if (MO.isImm()) return MO.getImm() / 4;
+
+  assert(MO.isExpr() &&
+         "getBranchTarget16OpValue expects only expressions or immediates");
+
+  Fixups.push_back(MCFixup::create(0, MO.getExpr(),
+                                   MCFixupKind(Sim::fixup_Sim_PC16)));
   return 0;
 }
 

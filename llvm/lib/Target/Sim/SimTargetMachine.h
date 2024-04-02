@@ -19,6 +19,7 @@ public:
                      bool JIT);
   ~SimTargetMachine() override;
 
+  const SimSubtarget *getSubtargetImpl() const { return &Subtarget; }
   const SimSubtarget *getSubtargetImpl(const Function &) const override {
     return &Subtarget;
   }

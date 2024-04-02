@@ -25,6 +25,7 @@ add_llvm_target(SimCodeGen
   SimMCInstLower.cpp
 
   LINK_COMPONENTS
+  Analysis
   AsmPrinter
   CodeGen
   Core
@@ -34,6 +35,7 @@ add_llvm_target(SimCodeGen
   Support
   Target
   SimInfo
+  GlobalISel
 
   ADD_TO_COMPONENT
   Sim

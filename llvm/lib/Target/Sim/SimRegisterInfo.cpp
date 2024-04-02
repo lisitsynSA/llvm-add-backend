@@ -26,12 +26,6 @@ using namespace llvm;
 
 SimRegisterInfo::SimRegisterInfo() : SimGenRegisterInfo(Sim::R0) {}
 
-#if 0
-bool SimRegisterInfo::needsFrameMoves(const MachineFunction &MF) {
-  return MF.needsFrameMoves();
-}
-#endif
-
 const MCPhysReg *
 SimRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
   return CSR_Sim_SaveList;
@@ -42,10 +36,14 @@ BitVector SimRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   SimFrameLowering const *TFI = getFrameLowering(MF);
   
   BitVector Reserved(getNumRegs());
-  Reserved.set(Sim::R1);
+  Reserved.set(Sim::GP);
+  Reserved.set(Sim::SP);
 
   if (TFI->hasFP(MF)) {
-    Reserved.set(Sim::R2);
+    Reserved.set(Sim::FP);
+  }
+  if (TFI->hasBP(MF)) {
+    Reserved.set(Sim::BP);
   }
   return Reserved;
 }
@@ -54,13 +52,6 @@ bool SimRegisterInfo::requiresRegisterScavenging(
     const MachineFunction &MF) const {
   return false; // TODO: what for?
 }
-
-#if 0
-bool SimRegisterInfo::useFPForScavengingIndex(
-    const MachineFunction &MF) const {
-  llvm_unreachable("");
-}
-#endif
 
 // TODO: rewrite!
 bool SimRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
@@ -90,7 +81,7 @@ bool SimRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
 
 Register SimRegisterInfo::getFrameRegister(const MachineFunction &MF) const {
   const TargetFrameLowering *TFI = getFrameLowering(MF);
-  return TFI->hasFP(MF) ? Sim::R2 : Sim::R1;
+  return TFI->hasFP(MF) ? Sim::FP : Sim::SP;
 }
 
 const uint32_t *

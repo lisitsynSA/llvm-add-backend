@@ -15,8 +15,6 @@ namespace llvm {
 /// SimFunctionInfo - This class is derived from MachineFunction private
 /// Sim target-specific information for each MachineFunction.
 class SimFunctionInfo : public MachineFunctionInfo {
-  virtual void anchor();
-
   bool ReturnStackOffsetSet = false;
   unsigned ReturnStackOffset = -1U;
 

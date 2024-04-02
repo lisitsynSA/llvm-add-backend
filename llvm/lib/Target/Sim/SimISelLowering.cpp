@@ -61,7 +61,6 @@ SimTargetLowering::SimTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::BR_CC, MVT::i32, Custom);
 
   setOperationAction(ISD::FRAMEADDR, MVT::i32, Legal);
-  setOperationAction(ISD::INTRINSIC_VOID, MVT::i32, Custom);
   // setOperationAction(ISD::FrameIndex, MVT::i32, Custom);
   // setOperationAction(ISD::GlobalAddress, MVT::i32, Custom);
 }
@@ -610,4 +609,66 @@ bool SimTargetLowering::isLegalAddressingMode(const DataLayout &DL,
   }
 
   return true;
+}
+
+// Don't emit tail calls for the time being.
+bool SimTargetLowering::mayBeEmittedAsTailCall(const CallInst *CI) const {
+  return false;
+}
+
+static void translateSetCCForBranch(const SDLoc &DL, SDValue &LHS, SDValue &RHS,
+                                    ISD::CondCode &CC, SelectionDAG &DAG) {
+  switch (CC) {
+  default:
+    break;
+  case ISD::SETLT:
+  case ISD::SETGE:
+    CC = ISD::getSetCCSwappedOperands(CC);
+    std::swap(LHS, RHS);
+    break;
+  }
+}
+
+SDValue SimTargetLowering::lowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
+  SDValue CC = Op.getOperand(1);
+  SDValue LHS = Op.getOperand(2);
+  SDValue RHS = Op.getOperand(3);
+  SDValue Block = Op->getOperand(4);
+  SDLoc DL(Op);
+
+  assert(LHS.getValueType() == MVT::i32);
+
+  ISD::CondCode CCVal = cast<CondCodeSDNode>(CC)->get();
+  translateSetCCForBranch(DL, LHS, RHS, CCVal, DAG);
+  SDValue TargetCC = DAG.getCondCode(CCVal);
+
+  return DAG.getNode(SimISD::BR_CC, DL, Op.getValueType(), Op.getOperand(0),
+                     LHS, RHS, TargetCC, Block);
+}
+
+SDValue SimTargetLowering::lowerFRAMEADDR(SDValue Op,
+                                           SelectionDAG &DAG) const {
+  const SimRegisterInfo &RI = *STI.getRegisterInfo();
+  MachineFunction &MF = DAG.getMachineFunction();
+  MachineFrameInfo &MFI = MF.getFrameInfo();
+  MFI.setFrameAddressIsTaken(true);
+  Register FrameReg = RI.getFrameRegister(MF);
+  EVT VT = Op.getValueType();
+  SDLoc DL(Op);
+  SDValue FrameAddr = DAG.getCopyFromReg(DAG.getEntryNode(), DL, FrameReg, VT);
+  // Only for current frame
+  assert(cast<ConstantSDNode>(Op.getOperand(0))->getZExtValue() == 0);
+  return FrameAddr;
+}
+
+SDValue SimTargetLowering::LowerOperation(SDValue Op,
+                                           SelectionDAG &DAG) const {
+  switch (Op->getOpcode()) {
+  case ISD::BR_CC:
+    return lowerBR_CC(Op, DAG);
+  case ISD::FRAMEADDR:
+    return lowerFRAMEADDR(Op, DAG);
+  default:
+    llvm_unreachable("");
+  }
 }

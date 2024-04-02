@@ -38,7 +38,16 @@ bool LowerSimMachineOperandToMCOperand(const MachineOperand &MO,
                                          MCOperand &MCOp, const AsmPrinter &AP);
 
 FunctionPass *createSimISelDag(SimTargetMachine &TM);
+namespace Sim {
+enum {
+  RA = Sim::R0,
+  SP = Sim::R1,
+  FP = Sim::R2,
+  BP = Sim::R3,
+  GP = Sim::R4,
+};
 
+} // namespace Sim
 } // namespace llvm
 
 #endif // LLVM_LIB_TARGET_Sim_Sim_H
