@@ -3,6 +3,7 @@ add_llvm_component_library(LLVMSimDesc
   SimMCAsmInfo.cpp
   SimInstPrinter.cpp
   SimMCCodeEmitter.cpp
+  SimAsmBackend.cpp
 
   LINK_COMPONENTS
   MC
