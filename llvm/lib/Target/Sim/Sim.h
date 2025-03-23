@@ -5,13 +5,13 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 
-#define SIM_DUMP(Color)                                                        \
+/*#define SIM_DUMP(Color)                                                      \
   {                                                                            \
     llvm::errs().changeColor(Color)                                            \
         << __func__ << "\n\t\t" << __FILE__ << ":" << __LINE__ << "\n";        \
     llvm::errs().changeColor(llvm::raw_ostream::WHITE);                        \
-  }
-// #define SIM_DUMP(Color) {}
+  }*/
+#define SIM_DUMP(Color) {}
 
 #define SIM_DUMP_RED SIM_DUMP(llvm::raw_ostream::RED)
 #define SIM_DUMP_GREEN SIM_DUMP(llvm::raw_ostream::GREEN)
