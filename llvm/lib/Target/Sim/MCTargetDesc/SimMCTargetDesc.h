@@ -1,6 +1,14 @@
 #ifndef LLVM_LIB_TARGET_SIM_MCTARGETDESC_SIMMCTARGETDESC_H
 #define LLVM_LIB_TARGET_SIM_MCTARGETDESC_SIMMCTARGETDESC_H
 
+namespace llvm {
+class MCCodeEmitter;
+class MCContext;
+class MCInstrInfo;
+
+MCCodeEmitter *createSimMCCodeEmitter(const MCInstrInfo &MCII, MCContext &Ctx);
+} // namespace llvm
+
 // Defines symbolic names for Sim registers.  This defines a mapping from
 // register name to register number.
 //

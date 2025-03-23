@@ -9,6 +9,7 @@ tablegen(LLVM SimGenMCPseudoLowering.inc -gen-pseudo-lowering)
 tablegen(LLVM SimGenDAGISel.inc -gen-dag-isel)
 tablegen(LLVM SimGenCallingConv.inc -gen-callingconv)
 tablegen(LLVM SimGenAsmWriter.inc -gen-asm-writer)
+tablegen(LLVM SimGenMCCodeEmitter.inc -gen-emitter)
 
 add_public_tablegen_target(SimCommonTableGen)
 
