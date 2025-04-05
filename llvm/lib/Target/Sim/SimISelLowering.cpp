@@ -57,7 +57,7 @@ SimTargetLowering::SimTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::Constant, MVT::i32, Legal);
   setOperationAction(ISD::UNDEF, MVT::i32, Legal);
 
-  setOperationAction(ISD::BR_CC, MVT::i32, Custom);
+  setOperationAction(ISD::BR_CC, MVT::i32, Legal);
 
   setOperationAction(ISD::FRAMEADDR, MVT::i32, Legal);
 }

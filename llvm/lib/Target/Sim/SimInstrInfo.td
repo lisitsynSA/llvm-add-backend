@@ -77,6 +77,15 @@ def PseudoRET : SimPseudoInst<(outs), (ins), "# PseudoRET",
                 [(sim_ret)]>,
                 PseudoInstExpansion<(BR R0)>;
 
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
+def INC_EQi : SimInst<0x90, (outs GPR:$r1), (ins GPR:$r2, simm16:$r3_imm), "INC_EQi $r1 $r2 $r3_imm", []>;
+
+let isBranch = 1, isTerminator = 1, r2 = 0 in
+def BR_COND : SimInst<0xBC, (outs), (ins GPR:$r1, btarget16:$r3_imm), "BR_COND $r1 $r3_imm", []>;
+
+def : Pat<(brcc SETEQ, (add GPR:$r2, (i32 1)), simm16:$r4_imm, bb:$r3_imm),
+          (BR_COND (INC_EQi GPR:$r2, simm16:$r4_imm), btarget16:$r3_imm)>;
+
 // movli
 let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1, r2 = 0 in
 def MOVLI : SimInst<0xAA, (outs GPR:$r1), (ins simm16:$r3_imm),
