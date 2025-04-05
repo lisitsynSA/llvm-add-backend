@@ -35,9 +35,28 @@ def simm16 : Operand<i32>, ImmLeaf<i32, [{return isInt<16>(Imm);}]> {
   let OperandNamespace = "SimOp";
 }
 
+def btarget16 : Operand<OtherVT> {
+  let ParserMatchClass = SImmAsmOperand<16>;
+  let PrintMethod = "printBranchOperand";
+  let EncoderMethod = "getBranchTarget16OpValue";
+  let DecoderMethod = "decodeSImmOperand<16>";
+  let MCOperandPredicate = [{
+    int64_t Imm;
+    if (MCOp.evaluateAsConstantImm(Imm))
+      return isInt<16>(Imm);
+    return MCOp.isBareSymbolRef();
+  }];
+  let OperandType = "OPERAND_PCREL";
+}
+
 //===----------------------------------------------------------------------===//
 // Sim Instructions
 //===----------------------------------------------------------------------===//
+
+
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isBarrier = 1, isBranch = 1, isTerminator = 1, r1 = 0, r2 = 0 in
+def B : SimInst<0xB0, (outs), (ins btarget16:$r3_imm), "B $r3_imm",
+                [(br bb:$r3_imm)]>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1, r2 = 0, r3_imm = 0 in
 def BR : SimInst<0xBB, (outs), (ins GPR:$r1), "BR $r1",
