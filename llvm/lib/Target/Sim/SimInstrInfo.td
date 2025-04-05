@@ -97,6 +97,10 @@ def MOVHI : SimInst<0xAF, (outs GPR:$r1), (ins simm16:$r3_imm),
                     "MOVhi $r1 $r3_imm", []>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
+def ADD : SimInst<0x30, (outs GPR:$r1), (ins GPR:$r2, GPR:$r3_imm),
+               "ADD $r1 $r2 $r3_imm", [(set GPR:$r1, (add GPR:$r2, GPR:$r3_imm))]>;
+
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 def ORI : SimInst<0x44, (outs GPR:$r1), (ins GPR:$r2, simm16:$r3_imm),
                   "ORi $r1 $r2 $r3_imm", [(set GPR:$r1, (or GPR:$r2, simm16:$r3_imm))]>;
 
