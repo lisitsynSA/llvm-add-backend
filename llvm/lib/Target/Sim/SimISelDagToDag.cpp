@@ -76,6 +76,25 @@ void SimDAGToDAGISel::Select(SDNode *Node) {
     Node->setNodeId(-1);
     return;
   }
+
+  unsigned Opcode = Node->getOpcode();
   SDLoc DL(Node);
+
+  switch (Opcode) {
+  default:
+    break;
+  case SimISD::INC_EQi: {
+    SDNode *INC_EQi = CurDAG->getMachineNode(
+        Sim::INC_EQi, DL, {MVT::i32, MVT::i32},
+        {Node->getOperand(0),
+         CurDAG->getTargetConstant(Node->getConstantOperandVal(1), DL,
+                                   MVT::i32)});
+
+    ReplaceUses(SDValue(Node, 0), SDValue(INC_EQi, 0));
+    ReplaceUses(SDValue(Node, 1), SDValue(INC_EQi, 1));
+    CurDAG->RemoveDeadNode(Node);
+    return;
+  }
+  }
   SelectCode(Node);
 }

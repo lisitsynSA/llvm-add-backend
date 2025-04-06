@@ -2,6 +2,12 @@
 // Sim profiles and nodes
 //===----------------------------------------------------------------------===//
 
+def SDT_SimBrCC  : SDTypeProfile<0, 2, [ SDTCisVT<0, i32>,
+                                         SDTCisVT<1, OtherVT>]>;
+
+def sim_brcc     : SDNode<"SimISD::BR_CC", SDT_SimBrCC,
+                            [SDNPHasChain]>;
+
 def sim_ret      : SDNode<"SimISD::RET", SDTNone,
                             [SDNPHasChain, SDNPOptInGlue, SDNPVariadic]>;
 
@@ -78,13 +84,12 @@ def PseudoRET : SimPseudoInst<(outs), (ins), "# PseudoRET",
                 PseudoInstExpansion<(BR R0)>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
-def INC_EQi : SimInst<0x90, (outs GPR:$r1), (ins GPR:$r2, simm16:$r3_imm), "INC_EQi $r1 $r2 $r3_imm", []>;
+def INC_EQi : SimInst<0x90, (outs GPR:$r1, GPR:$r2_), (ins GPR:$r2, simm16:$r3_imm),
+                      "INC_EQi $r1 $r2 $r3_imm", []>;
 
 let isBranch = 1, isTerminator = 1, r2 = 0 in
-def BR_COND : SimInst<0xBC, (outs), (ins GPR:$r1, btarget16:$r3_imm), "BR_COND $r1 $r3_imm", []>;
-
-def : Pat<(brcc SETEQ, (add GPR:$r2, (i32 1)), simm16:$r4_imm, bb:$r3_imm),
-          (BR_COND (INC_EQi GPR:$r2, simm16:$r4_imm), btarget16:$r3_imm)>;
+def BR_COND : SimInst<0xBC, (outs), (ins GPR:$r1, btarget16:$r3_imm),
+                      "BR_COND $r1 $r3_imm", [(sim_brcc GPR:$r1, bb:$r3_imm)]>;
 
 // movli
 let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1, r2 = 0 in
@@ -116,5 +121,12 @@ def PUTPIXEL : SimInst<0xEE, (outs), (ins GPR:$r1, GPR:$r2, GPR:$r3_imm),
 // Sim Other patterns
 //===----------------------------------------------------------------------===//
 
+def i32hi16 : Operand<i32>, PatLeaf<(i32 imm), [{
+    // i32hi16 predicate - true if the 32-bit immediate has only leftmost 16
+    // bits set.
+    return ((N->getZExtValue() & 0xFFFF0000UL) == N->getZExtValue());}], HI16> {
+}
+
 // i32 imm
 def : Pat<(i32 imm:$r3_imm), (ORI (MOVHI (HI16 imm:$r3_imm)), (LI16 imm:$r3_imm))>;
+def : Pat<(i32 i32hi16:$r3_imm), (MOVHI i32hi16:$r3_imm)>;

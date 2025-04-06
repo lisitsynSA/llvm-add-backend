@@ -57,7 +57,7 @@ SimTargetLowering::SimTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::Constant, MVT::i32, Legal);
   setOperationAction(ISD::UNDEF, MVT::i32, Legal);
 
-  setOperationAction(ISD::BR_CC, MVT::i32, Legal);
+  setOperationAction(ISD::BR_CC, MVT::i32, Custom);
 
   setOperationAction(ISD::FRAMEADDR, MVT::i32, Legal);
 }
@@ -69,6 +69,10 @@ const char *SimTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "SimISD::CALL";
   case SimISD::RET:
     return "SimISD::RET";
+  case SimISD::BR_CC:
+    return "SimISD::BR_CC";
+  case SimISD::INC_EQi:
+    return "SimISD::INC_EQi";
   }
   return nullptr;
 }
@@ -605,4 +609,37 @@ bool SimTargetLowering::isLegalAddressingMode(const DataLayout &DL,
   }
 
   return true;
+}
+
+SDValue SimTargetLowering::lowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
+  // t26: ch = br_cc t22, seteq:ch, t10, Constant:i32<512>,
+  // BasicBlock:ch<for.cond.cleanup7>
+  SDValue CC = Op.getOperand(1);
+  SDValue ADD = Op.getOperand(2);
+  ISD::CondCode CCVal = cast<CondCodeSDNode>(CC)->get();
+  if (CCVal == ISD::CondCode::SETEQ && ADD->getOpcode() == ISD::ADD) {
+    SDValue INC = ADD->getOperand(1);
+    if (INC->getOpcode() == ISD::Constant &&
+        cast<ConstantSDNode>(INC)->getZExtValue() == 1) {
+      SDValue CMP = Op.getOperand(3);
+      SDValue INCEQi =
+          DAG.getNode(SimISD::INC_EQi, ADD, DAG.getVTList({MVT::i32, MVT::i32}),
+                      ADD->getOperand(0), CMP);
+      DAG.ReplaceAllUsesWith(ADD, INCEQi.getValue(1));
+      DAG.RemoveDeadNode(ADD.getNode());
+      SDValue Block = Op->getOperand(4);
+      return DAG.getNode(SimISD::BR_CC, Op, Op.getValueType(), Op.getOperand(0),
+                         INCEQi.getValue(0), Block);
+    }
+  }
+  return Op;
+}
+
+SDValue SimTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) const {
+  switch (Op->getOpcode()) {
+  case ISD::BR_CC:
+    return lowerBR_CC(Op, DAG);
+  default:
+    llvm_unreachable("");
+  }
 }
