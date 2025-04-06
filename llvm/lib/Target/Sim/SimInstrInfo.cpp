@@ -15,3 +15,17 @@ using namespace llvm;
 #define DEBUG_TYPE "Sim-inst-info"
 
 SimInstrInfo::SimInstrInfo() : SimGenInstrInfo() { SIM_DUMP_GREEN }
+
+void SimInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
+                               MachineBasicBlock::iterator MBBI,
+                               const DebugLoc &DL, MCRegister DstReg,
+                               MCRegister SrcReg, bool KillSrc,
+                               bool RenamableDest, bool RenamableSrc) const {
+  if (Sim::GPRRegClass.contains(DstReg, SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(Sim::ORI), DstReg)
+        .addReg(SrcReg, getKillRegState(KillSrc))
+        .addImm(0);
+    return;
+  }
+  llvm_unreachable("can't copyPhysReg");
+}

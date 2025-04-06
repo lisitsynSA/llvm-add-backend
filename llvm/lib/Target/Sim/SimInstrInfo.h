@@ -1,8 +1,8 @@
 #ifndef LLVM_LIB_TARGET_SIM_SIMINSTRINFO_H
 #define LLVM_LIB_TARGET_SIM_SIMINSTRINFO_H
 
-#include "SimRegisterInfo.h"
 #include "MCTargetDesc/SimInfo.h"
+#include "SimRegisterInfo.h"
 #include "llvm/CodeGen/TargetInstrInfo.h"
 
 #define GET_INSTRINFO_HEADER
@@ -15,7 +15,10 @@ class SimSubtarget;
 class SimInstrInfo : public SimGenInstrInfo {
 public:
   SimInstrInfo();
-
+  void copyPhysReg(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+                   const DebugLoc &DL, MCRegister DestReg, MCRegister SrcReg,
+                   bool KillSrc, bool RenamableDest = false,
+                   bool RenamableSrc = false) const override;
 };
 
 } // end namespace llvm
