@@ -87,6 +87,10 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 def INC_EQi : SimInst<0x90, (outs GPR:$r1, GPR:$r2_), (ins GPR:$r2, simm16:$r3_imm),
                       "INC_EQi $r1 $r2 $r3_imm", []>;
 
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
+def INC_NEi : SimInst<0x91, (outs GPR:$r1, GPR:$r2_), (ins GPR:$r2, simm16:$r3_imm),
+                      "INC_NEi $r1 $r2 $r3_imm", []>;
+
 let isBranch = 1, isTerminator = 1, r2 = 0 in
 def BR_COND : SimInst<0xBC, (outs), (ins GPR:$r1, btarget16:$r3_imm),
                       "BR_COND $r1 $r3_imm", [(sim_brcc GPR:$r1, bb:$r3_imm)]>;
@@ -104,6 +108,10 @@ def MOVHI : SimInst<0xAF, (outs GPR:$r1), (ins simm16:$r3_imm),
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 def ADD : SimInst<0x30, (outs GPR:$r1), (ins GPR:$r2, GPR:$r3_imm),
                "ADD $r1 $r2 $r3_imm", [(set GPR:$r1, (add GPR:$r2, GPR:$r3_imm))]>;
+
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
+def MUL : SimInst<0x32, (outs GPR:$r1), (ins GPR:$r2, GPR:$r3_imm),
+               "MUL $r1 $r2 $r3_imm", [(set GPR:$r1, (mul GPR:$r2, GPR:$r3_imm))]>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 def ORI : SimInst<0x44, (outs GPR:$r1), (ins GPR:$r2, simm16:$r3_imm),

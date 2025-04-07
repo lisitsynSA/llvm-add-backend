@@ -73,6 +73,8 @@ const char *SimTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "SimISD::BR_CC";
   case SimISD::INC_EQi:
     return "SimISD::INC_EQi";
+  case SimISD::INC_NEi:
+    return "SimISD::INC_NEi";
   }
   return nullptr;
 }
@@ -611,25 +613,36 @@ bool SimTargetLowering::isLegalAddressingMode(const DataLayout &DL,
   return true;
 }
 
+unsigned SimTargetLowering::getIsdOpIncCmp(ISD::CondCode CCVal) const {
+  switch (CCVal) {
+  default:
+    llvm_unreachable("CCVal for INC not implemented");
+  case ISD::CondCode::SETEQ:
+    return SimISD::INC_EQi;
+  case ISD::CondCode::SETNE:
+    return SimISD::INC_NEi;
+  }
+}
+
 SDValue SimTargetLowering::lowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
   // t26: ch = br_cc t22, seteq:ch, t10, Constant:i32<512>,
   // BasicBlock:ch<for.cond.cleanup7>
   SDValue CC = Op.getOperand(1);
   SDValue ADD = Op.getOperand(2);
   ISD::CondCode CCVal = cast<CondCodeSDNode>(CC)->get();
-  if (CCVal == ISD::CondCode::SETEQ && ADD->getOpcode() == ISD::ADD) {
+  if (ADD->getOpcode() == ISD::ADD) {
     SDValue INC = ADD->getOperand(1);
     if (INC->getOpcode() == ISD::Constant &&
         cast<ConstantSDNode>(INC)->getZExtValue() == 1) {
       SDValue CMP = Op.getOperand(3);
-      SDValue INCEQi =
-          DAG.getNode(SimISD::INC_EQi, ADD, DAG.getVTList({MVT::i32, MVT::i32}),
-                      ADD->getOperand(0), CMP);
-      DAG.ReplaceAllUsesWith(ADD, INCEQi.getValue(1));
+      SDValue INCCMP = DAG.getNode(getIsdOpIncCmp(CCVal), ADD,
+                                   DAG.getVTList({MVT::i32, MVT::i32}),
+                                   ADD->getOperand(0), CMP);
+      DAG.ReplaceAllUsesWith(ADD, INCCMP.getValue(1));
       DAG.RemoveDeadNode(ADD.getNode());
       SDValue Block = Op->getOperand(4);
       return DAG.getNode(SimISD::BR_CC, Op, Op.getValueType(), Op.getOperand(0),
-                         INCEQi.getValue(0), Block);
+                         INCCMP.getValue(0), Block);
     }
   }
   return Op;

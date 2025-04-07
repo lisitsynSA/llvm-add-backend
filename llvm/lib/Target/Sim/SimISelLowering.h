@@ -19,6 +19,7 @@ enum NodeType : unsigned {
   CALL,
   BR_CC,
   INC_EQi,
+  INC_NEi,
 };
 
 } // namespace SimISD
@@ -67,6 +68,7 @@ private:
   /// Provide custom lowering hooks for some operations.
   SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
   SDValue lowerBR_CC(SDValue Op, SelectionDAG &DAG) const;
+  unsigned getIsdOpIncCmp(ISD::CondCode CCVal) const;
 };
 
 } // end namespace llvm
