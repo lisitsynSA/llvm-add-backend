@@ -1,3 +1,4 @@
+#include "MCTargetDesc/SimFixupKinds.h"
 #include "MCTargetDesc/SimMCTargetDesc.h"
 #include "Sim.h"
 #include "llvm/ADT/SmallVector.h"
@@ -129,6 +130,9 @@ SimMCCodeEmitter::getBranchTarget16OpValue(const MCInst &MI, unsigned OpNo,
 
   assert(MO.isExpr() &&
          "getBranchTarget16OpValue expects only expressions or immediates");
+
+  Fixups.push_back(
+      MCFixup::create(0, MO.getExpr(), MCFixupKind(Sim::fixup_Sim_PC16)));
   return 0;
 }
 
