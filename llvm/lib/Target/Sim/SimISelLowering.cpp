@@ -75,6 +75,14 @@ const char *SimTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "SimISD::INC_EQi";
   case SimISD::INC_NEi:
     return "SimISD::INC_NEi";
+  case SimISD::INC_LEi:
+    return "SimISD::INC_LEi";
+  case SimISD::INC_LTi:
+    return "SimISD::INC_LTi";
+  case SimISD::INC_GEi:
+    return "SimISD::INC_GEi";
+  case SimISD::INC_GTi:
+    return "SimISD::INC_GTi";
   }
   return nullptr;
 }
@@ -621,6 +629,14 @@ unsigned SimTargetLowering::getIsdOpIncCmp(ISD::CondCode CCVal) const {
     return SimISD::INC_EQi;
   case ISD::CondCode::SETNE:
     return SimISD::INC_NEi;
+  case ISD::CondCode::SETLE:
+    return SimISD::INC_LEi;
+  case ISD::CondCode::SETLT:
+    return SimISD::INC_LTi;
+  case ISD::CondCode::SETGE:
+    return SimISD::INC_GEi;
+  case ISD::CondCode::SETGT:
+    return SimISD::INC_GTi;
   }
 }
 

@@ -79,6 +79,14 @@ unsigned SimDAGToDAGISel::getOpIncCmp(unsigned Opcode) const {
     return Sim::INC_EQi;
   case SimISD::INC_NEi:
     return Sim::INC_NEi;
+  case SimISD::INC_LEi:
+    return Sim::INC_LEi;
+  case SimISD::INC_LTi:
+    return Sim::INC_LTi;
+  case SimISD::INC_GEi:
+    return Sim::INC_GEi;
+  case SimISD::INC_GTi:
+    return Sim::INC_GTi;
   }
 }
 
@@ -96,7 +104,11 @@ void SimDAGToDAGISel::Select(SDNode *Node) {
   default:
     break;
   case SimISD::INC_EQi:
-  case SimISD::INC_NEi: {
+  case SimISD::INC_NEi:
+  case SimISD::INC_LEi:
+  case SimISD::INC_LTi:
+  case SimISD::INC_GEi:
+  case SimISD::INC_GTi: {
     SDNode *INCCMP = CurDAG->getMachineNode(
         getOpIncCmp(Opcode), DL, {MVT::i32, MVT::i32},
         {Node->getOperand(0),

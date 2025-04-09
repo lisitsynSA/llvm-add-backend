@@ -20,6 +20,10 @@ enum NodeType : unsigned {
   BR_CC,
   INC_EQi,
   INC_NEi,
+  INC_LEi,
+  INC_LTi,
+  INC_GEi,
+  INC_GTi,
 };
 
 } // namespace SimISD
