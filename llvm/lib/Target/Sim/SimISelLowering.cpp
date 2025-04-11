@@ -49,8 +49,18 @@ SimTargetLowering::SimTargetLowering(const TargetMachine &TM,
     setOperationAction(Opc, MVT::i32, Expand);
 
   setOperationAction(ISD::ADD, MVT::i32, Legal);
+  setOperationAction(ISD::SUB, MVT::i32, Legal);
   setOperationAction(ISD::MUL, MVT::i32, Legal);
-  // ...
+  setOperationAction(ISD::SDIV, MVT::i32, Legal);
+  setOperationAction(ISD::UREM, MVT::i32, Legal);
+  setOperationAction(ISD::OR, MVT::i32, Legal);
+  setOperationAction(ISD::AND, MVT::i32, Legal);
+  setOperationAction(ISD::XOR, MVT::i32, Legal);
+  setOperationAction(ISD::ABS, MVT::i32, Legal);
+  setOperationAction(ISD::SRA, MVT::i32, Legal);
+  setOperationAction(ISD::SRL, MVT::i32, Legal);
+  setOperationAction(ISD::SHL, MVT::i32, Legal);
+
   setOperationAction(ISD::LOAD, MVT::i32, Legal);
   setOperationAction(ISD::STORE, MVT::i32, Legal);
 

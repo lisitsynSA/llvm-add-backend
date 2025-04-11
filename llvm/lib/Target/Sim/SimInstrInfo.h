@@ -19,6 +19,12 @@ public:
                    const DebugLoc &DL, MCRegister DestReg, MCRegister SrcReg,
                    bool KillSrc, bool RenamableDest = false,
                    bool RenamableSrc = false) const override;
+
+  void storeRegToStackSlot(MachineBasicBlock &MBB,
+                           MachineBasicBlock::iterator I, Register SrcReg,
+                           bool IsKill, int FI, const TargetRegisterClass *RC,
+                           const TargetRegisterInfo *TRI, Register VReg,
+                           MachineInstr::MIFlag Flags) const override {};
 };
 
 } // end namespace llvm

@@ -129,10 +129,22 @@ defm DIV : Arithm<0x33, sdiv>;
 defm OR  : Arithm<0x34, or>;
 defm AND : Arithm<0x35, and>;
 defm XOR : Arithm<0x36, xor>;
+defm SRA : Arithm<0x37, sra>;
+defm SRL : Arithm<0x38, srl>;
+defm SHL : Arithm<0x39, shl>;
+defm UREM: Arithm<0x3a, urem>;
+
+// abs
+let r3_imm = 0 in
+def ABS : SimInst<0xAB, (outs GPR:$r1), (ins GPR:$r2), "ABS $r1 $r2", [(set GPR:$r1, (abs GPR:$r2))]>;
 
 // flush
 let r1 = 0, r2 = 0, r3_imm = 0 in
 def FLUSH : SimInst<0xFF, (outs), (ins), "FLUSH", [(int_sim_flush)]>;
+
+// rand
+let r2 = 0, r3_imm = 0 in
+def RAND : SimInst<0xDD, (outs GPR:$r1), (ins), "RAND $r1", [(set GPR:$r1, (int_sim_rand))]>;
 
 // putpixel
 def PUTPIXEL : SimInst<0xEE, (outs), (ins GPR:$r1, GPR:$r2, GPR:$r3_imm),

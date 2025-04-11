@@ -6,4 +6,6 @@ let TargetPrefix = "sim" in {  // All intrinsics start with "llvm.sim.".
  def int_sim_flush: ClangBuiltin<"simFlush">,
    Intrinsic<[], [], [IntrNoMem, IntrHasSideEffects]>;
  
+ def int_sim_rand: ClangBuiltin<"simRand">,
+   Intrinsic<[llvm_i32_ty], [], [IntrNoMem, IntrHasSideEffects]>;
  } // TargetPrefix = "sim"
